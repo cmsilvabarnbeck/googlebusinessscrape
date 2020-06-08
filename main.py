@@ -41,8 +41,26 @@ for k in range (0, nameCount):
     dataInJson2 = json.loads(data2)
     phoneNumber = dataInJson2["result"]
     phoneNumber = phoneNumber.get("formatted_phone_number")
-    new_row = {"Business Name": busName, "Address": busAdd, "Phone1": phoneNumber}
-    df = df.append(new_row, ignore_index=True)
+    street = dataInJson2["result"]
+    street = street.get('adr_address')
+    street = BeautifulSoup(street).text
+    
+    commaCount = street.count(",")
+    testAddress = re.search("^[0-9]\d", street)
+    
+    if testAddress and phoneNumber is not None and commaCount == 3:
+        street = street.split(", ")
+        streetName = street[0]
+        City = street[1]
+        State = street[2].split(" ")
+        StateName = State[0]
+        Zip = State[1]
+        Zip = str(Zip)[:5]
+        
+        if StateName == "NC":
+            new_row = {"Business Name": busName, "Address": streetName, "City": City, "State": StateName, "Zip": Zip,  "Phone1": phoneNumber}
+            df = df.append(new_row, ignore_index=True)
+    
    
 pageOneToken = dataInJson.get('next_page_token')
 
@@ -67,22 +85,25 @@ if pageOneToken is not None:
         p1PhoneNumber = p1PhoneNumber.get('formatted_phone_number')
         p1Street = p1Json2['result']
         p1Street = p1Street.get('adr_address')
-   
-   
         p1Street = BeautifulSoup(p1Street).text
+        p1CommaCount = p1Street.count(",")
         #test and make sure we are working with a full address
-        testAddress = re.search("^[0-9]\d", p1Street)
-   
-        p1Street = p1Street.split(", ")
-        p1StreetName = p1Street[0]
-        p1City = p1Street[1]
-        p1State = p1Street[2].split(" ")
-        p1StateName = p1State[0]
-        p1Zip = p1State[0]
-        p1Zip = str(p1Zip)[:5]
-        new_row1 = {"Business Name": p1BusName, "Address": p1StreetName, "City": p1City, "State": p1StateName, "Zip": p1Zip, "Phone1": p1PhoneNumber}
-        df = df.append(new_row1, ignore_index=True)
-   
+        p1TestAddress = re.search("^[0-9]\d", p1Street)
+           
+        if p1TestAddress and p1PhoneNumber is not None and p1CommaCount == 3:
+            
+            p1Street = p1Street.split(", ")
+            p1StreetName = p1Street[0]
+            p1City = p1Street[1]
+            p1State = p1Street[2].split(" ")
+            p1StateName = p1State[0]
+            p1Zip = p1State[1]
+            p1Zip = str(p1Zip)[:5]
+            
+            if p1StateName == "NC":
+                new_row1 = {"Business Name": p1BusName, "Address": p1StreetName, "City": p1City, "State": p1StateName, "Zip": p1Zip, "Phone1": p1PhoneNumber}
+                df = df.append(new_row1, ignore_index=True)            
+ 
 pageTwoToken = p1Json.get('next_page_token')
 
 if pageTwoToken is not None:
@@ -108,19 +129,31 @@ if pageTwoToken is not None:
         p2Street = p2Json2['result']
         p2Street = p2Street.get('adr_address')
         p2Street = BeautifulSoup(p2Street).text
-        p2Street = p2Street.split(", ")
-        p2StreetName = p2Street[0]
-        p2City = p2Street[1]
-        p2State = p2Street[2].split(" ")
-        p2StateName = p2State[0]
-        p2Zip = p2State[1]
-        p2Zip = str(p2Zip)[:5]
-        new_row2 = {"Business Name": p2BusName, "Address": p2StreetName, "City": p2City, "State": p2StateName, "Zip": p2Zip, "Phone1": p2PhoneNumber}
-        df = df.append(new_row2, ignore_index=True)
+        p2CommaCount = p2Street.count(",")
         
+        p2TestAddress = re.search("^[0-9]\d", p2Street)
+           
+        if p2TestAddress and p2PhoneNumber is not None and p2CommaCount == 3:
+            
+            p2Street = p2Street.split(", ")
+            p2StreetName = p2Street[0]
+            p2City = p2Street[1]
+            p2State = p2Street[2].split(" ")
+            p2StateName = p2State[0]
+            p2Zip = p2State[1]
+            p2Zip = str(p2Zip)[:5]
+            
+            if p2StateName == "NC":
+                new_row2 = {"Business Name": p2BusName, "Address": p2StreetName, "City": p2City, "State": p2StateName, "Zip": p2Zip, "Phone1": p2PhoneNumber}
+                df = df.append(new_row2, ignore_index=True)
+    
+    df.drop_duplicates(subset='Business Name', keep='first', inplace=True)
     display(df)
+    df.to_csv('newClients.csv', index=False)
     
 else:
-   
+    
+    df.drop_duplicates(subset='Business Name', keep='first', inplace=True)
     display(df)
+    df.to_csv('newClients.csv', index=False)
     
