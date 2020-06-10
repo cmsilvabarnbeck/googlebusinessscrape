@@ -7,8 +7,8 @@ from bs4 import BeautifulSoup
 import re
 from IPython.core.display import HTML
 
-
-api_key = "AIzaSyCYcWpLDKf5yUAOqotd4QIBT3WULvcqMYU"
+#enter API Key Below:
+api_key = "*****"
 business = input("What type of businesses are you searching? ")
 type(business)
 
